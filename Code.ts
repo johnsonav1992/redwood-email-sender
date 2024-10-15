@@ -8,10 +8,11 @@ const sendEmailsInBatches = () => {
   const emailData = emailRange.getValues();
   let sentCount = 0;
 
+  // Start at i = 1 to account for headers
   for (let i = 1; i < emailData.length; i++) {
-    // Start from row 2 (i=1) assuming row 1 has headers
     const email = emailData[i][0]; // Get the email from email column
-    const status = sheet.getRange(`${statusColumn}${i + 1}`).getValue(); // Check status in status column
+    const cellNum = i + 1;
+    const status = sheet.getRange(`${statusColumn}${cellNum}`).getValue(); // Check status in status column
 
     if (status !== "Sent" && email) {
       try {
@@ -23,7 +24,7 @@ const sendEmailsInBatches = () => {
           bcc: bccEmails,
         });
 
-        sheet.getRange(`${statusColumn}${i + 1}`).setValue("Sent");
+        sheet.getRange(`${statusColumn}${cellNum}`).setValue("Sent");
 
         sentCount++;
 
