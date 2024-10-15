@@ -3,6 +3,8 @@ const statusColumn: string = "B"; // Column for email sending status
 const BATCH_SIZE = 30; // Number of emails to send at a time
 
 const sendEmailsInBatches = () => {
+  Logger.log("Starting new batch");
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const emailRange = sheet.getRange(`${emailColumn}:${emailColumn}`);
   const emailData = emailRange.getValues();
@@ -28,6 +30,8 @@ const sendEmailsInBatches = () => {
 
         sentCount++;
 
+        Logger.log("Sending email to: " + email);
+
         if (sentCount >= BATCH_SIZE) break;
       } catch (e) {
         Logger.log("Error sending email to: " + email);
@@ -36,6 +40,8 @@ const sendEmailsInBatches = () => {
   }
 
   if (sentCount >= BATCH_SIZE) {
+    Logger.log("Scheduling new batch...");
+    Logger.log("Remaining send quota is: " + MailApp.getRemainingDailyQuota());
     ScriptApp.newTrigger("sendEmailsInBatches")
       .timeBased()
       .after(5 * 1000) // Reschedule to send the next batch in 5 seconds
