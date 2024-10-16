@@ -13,15 +13,15 @@ const sendEmailsInBatches_ = () => {
   const currentStoredIndex = properties.getProperty("currentIndex") as string;
 
   if (!remainingSendQuota) {
-    Logger.log(
+    console.log(
       "Send quota is: " + remainingSendQuota + ". Cannot send any more emails"
     );
     deleteTrigger_();
     return properties.deleteProperty("currentIndex");
   }
 
-  Logger.log("Starting new batch...");
-  Logger.log("Remaining send quota is: " + remainingSendQuota);
+  console.log("Starting new batch...");
+  console.log("Remaining send quota is: " + remainingSendQuota);
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const emailColumn = sheet.getRange(
@@ -36,7 +36,7 @@ const sendEmailsInBatches_ = () => {
   let currentEmailRowToStartOn = parseInt(currentStoredIndex) || 1; // Start from 1 initially to skip headers
 
   if (currentEmailRowToStartOn > totalEmails) {
-    Logger.log("All emails sent.");
+    console.log("All emails sent.");
     deleteTrigger_();
     return properties.deleteProperty("currentIndex");
   }
@@ -76,18 +76,18 @@ const sendEmailsInBatches_ = () => {
         sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
       });
 
-      Logger.log("Sent email batch to: " + emailAddresses);
+      console.log("Sent email batch to: " + emailAddresses);
 
       currentEmailRowToStartOn += emailBatch.length;
     } catch (e) {
-      Logger.log("Error sending email batch to: " + emails);
+      console.error("Error sending email batch to: " + emails, e);
     }
   }
 
   properties.setProperty("currentIndex", currentEmailRowToStartOn.toString());
 
   if (currentEmailRowToStartOn > totalEmails) {
-    Logger.log("All emails processed.");
+    console.log("All emails processed.");
     deleteTrigger_();
     properties.deleteProperty("currentIndex");
   }
@@ -97,13 +97,13 @@ const setupTrigger_ = () => {
   const triggers = ScriptApp.getProjectTriggers();
 
   if (triggers.length === 0) {
-    Logger.log("Creating new trigger...");
+    console.log("Creating new trigger...");
     ScriptApp.newTrigger("sendEmailsInBatches_")
       .timeBased()
       .everyMinutes(1) // Triggers can only be created with minimum 1-minute intervals
       .create();
   } else {
-    Logger.log("Trigger already exists.");
+    console.log("Trigger already exists.");
   }
 };
 
@@ -111,7 +111,7 @@ const deleteTrigger_ = () => {
   const triggers = ScriptApp.getProjectTriggers();
   for (const trigger of triggers) {
     if (trigger.getHandlerFunction() === "sendEmailsInBatches_") {
-      Logger.log("Deleting trigger...");
+      console.log("Deleting trigger...");
       ScriptApp.deleteTrigger(trigger);
     }
   }
@@ -123,7 +123,7 @@ const startSendingEmails = () => {
 
 const checkQuota = () => {
   const remainingSendQuota = MailApp.getRemainingDailyQuota();
-  Logger.log("Remaining quota: " + remainingSendQuota);
+  console.log("Remaining quota: " + remainingSendQuota);
 };
 
 /////////////////////////////////////////////
