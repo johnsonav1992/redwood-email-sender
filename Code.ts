@@ -52,32 +52,31 @@ const sendEmailsInBatches_ = () => {
     }
   }
 
-  if (currentEmailRowToStartOn > totalEmails || !emailBatch.length) {
+  if (currentEmailRowToStartOn > totalEmails || !emailBatch.length)
     return exitJob_();
-  } else {
-    try {
-      const emailAddresses = emailBatch
-        .map((item) => item.email.trim())
-        .join(",");
 
-      GmailApp.sendEmail(TARGET_SEND_TO_EMAIL, EMAIL_SUBJECT, "body", {
-        htmlBody: html,
-        bcc: emailAddresses,
-        replyTo: TARGET_SEND_TO_EMAIL,
-      });
+  try {
+    const emailAddresses = emailBatch
+      .map((item) => item.email.trim())
+      .join(",");
 
-      emailBatch.forEach((item) => {
-        sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
-      });
+    GmailApp.sendEmail(TARGET_SEND_TO_EMAIL, EMAIL_SUBJECT, "body", {
+      htmlBody: html,
+      bcc: emailAddresses,
+      replyTo: TARGET_SEND_TO_EMAIL,
+    });
 
-      console.log("Sent email batch to: " + emailAddresses);
+    emailBatch.forEach((item) => {
+      sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
+    });
 
-      if (currentEmailRowToStartOn === totalEmails) return exitJob_();
+    console.log("Sent email batch to: " + emailAddresses);
 
-      currentEmailRowToStartOn += emailBatch.length;
-    } catch (e) {
-      console.error("Error sending email batch to: " + emails, e);
-    }
+    if (currentEmailRowToStartOn === totalEmails) return exitJob_();
+
+    currentEmailRowToStartOn += emailBatch.length;
+  } catch (e) {
+    console.error("Error sending email batch to: " + emails, e);
   }
 
   properties.setProperty("currentIndex", currentEmailRowToStartOn.toString());
