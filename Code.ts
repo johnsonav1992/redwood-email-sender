@@ -2,7 +2,7 @@ type EmailBatch = { email: string; rowNum: number };
 
 const emailColumnLetter = "A"; // Column for email addresses
 const statusColumnLetter = "B"; // Column for email sending status
-const BATCH_SIZE = 30; // Number of recipients per email batch
+const BATCH_SIZE = 2; // Number of recipients per email batch
 const TARGET_SEND_TO_EMAIL = "events@redwoodfp.com";
 const EMAIL_SUBJECT = "TRS & Retirement Planning Seminar 10/29/2024";
 
@@ -34,17 +34,9 @@ const sendEmailsInBatches_ = () => {
 
   // Get the current index from the script properties to know what row to start sending from
   let currentEmailRowToStartOn = parseInt(currentStoredIndex) || 1; // Start from 1 initially to skip headers
-
-  if (currentEmailRowToStartOn > totalEmails) {
-    console.log("All emails sent.");
-    deleteTrigger_();
-    return properties.deleteProperty("currentIndex");
-  }
-
   let emailBatch: EmailBatch[] = [];
   let sentCount = 0;
 
-  // Loop through emails starting from the currentIndex
   for (
     let i = currentEmailRowToStartOn;
     i <= totalEmails && sentCount < BATCH_SIZE;
@@ -60,7 +52,9 @@ const sendEmailsInBatches_ = () => {
     }
   }
 
-  if (emailBatch.length > 0) {
+  if (currentEmailRowToStartOn > totalEmails || !emailBatch.length) {
+    return exitJob_();
+  } else {
     try {
       const emailAddresses = emailBatch
         .map((item) => item.email.trim())
@@ -76,6 +70,8 @@ const sendEmailsInBatches_ = () => {
         sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
       });
 
+      if (currentEmailRowToStartOn === totalEmails) return exitJob_();
+
       console.log("Sent email batch to: " + emailAddresses);
 
       currentEmailRowToStartOn += emailBatch.length;
@@ -85,12 +81,6 @@ const sendEmailsInBatches_ = () => {
   }
 
   properties.setProperty("currentIndex", currentEmailRowToStartOn.toString());
-
-  if (currentEmailRowToStartOn > totalEmails) {
-    console.log("All emails processed.");
-    deleteTrigger_();
-    properties.deleteProperty("currentIndex");
-  }
 };
 
 const setupTrigger_ = () => {
@@ -105,6 +95,15 @@ const setupTrigger_ = () => {
   } else {
     console.log("Trigger already exists.");
   }
+};
+
+const exitJob_ = () => {
+  const properties = PropertiesService.getScriptProperties();
+
+  console.log("All emails sent.");
+
+  deleteTrigger_();
+  properties.deleteProperty("currentIndex");
 };
 
 const deleteTrigger_ = () => {
