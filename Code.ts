@@ -70,9 +70,9 @@ const sendEmailsInBatches_ = () => {
         sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
       });
 
-      if (currentEmailRowToStartOn === totalEmails) return exitJob_();
-
       console.log("Sent email batch to: " + emailAddresses);
+
+      if (currentEmailRowToStartOn === totalEmails) return exitJob_();
 
       currentEmailRowToStartOn += emailBatch.length;
     } catch (e) {
