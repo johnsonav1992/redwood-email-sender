@@ -113,7 +113,7 @@ function sendEmailsInBatches_() {
   setProperty_("currentIndex", currentEmailRowToStartOn.toString());
 }
 
-function startSendingEmails() {
+function setUpEmailJob() {
   setupTrigger_();
 }
 
