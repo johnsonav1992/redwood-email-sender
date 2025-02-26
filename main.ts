@@ -1,5 +1,3 @@
-type EmailBatch = { email: string; rowNum: number };
-
 const emailColumnLetter = "A"; // Column for email addresses
 const statusColumnLetter = "B"; // Column for email sending status
 const BATCH_SIZE = parseInt(getProperty_("BATCH_SIZE") as string); // Number of recipients per email batch
@@ -43,7 +41,7 @@ function sendEmailsInBatches_() {
 
   // Get the current index from the script properties to know what row to start sending from
   let currentEmailRowToStartOn = parseInt(currentStoredIndex) || 1; // Start from 1 initially to skip headers
-  let emailBatch: EmailBatch[] = [];
+  let emailBatch: EmailBatchEntry[] = [];
   let sentCount = 0;
 
   for (
@@ -113,7 +111,7 @@ function sendEmailsInBatches_() {
   setProperty_("currentIndex", currentEmailRowToStartOn.toString());
 }
 
-function setUpEmailJob() {
+function setUpEmailJobAndRun() {
   setupTrigger_();
 }
 
