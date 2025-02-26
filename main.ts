@@ -2,15 +2,9 @@ const emailColumnLetter = "A"; // Column for email addresses
 const statusColumnLetter = "B"; // Column for email sending status
 
 // Number of recipients per email batch
-const BATCH_SIZE = parseInt(
-  getProperty_(REQUIRED_SCRIPT_PROPERTIES?.BATCH_SIZE) as string
-);
-
-const TARGET_SEND_TO_EMAIL = getProperty_(
-  REQUIRED_SCRIPT_PROPERTIES?.TARGET_SEND_TO_EMAIL
-);
-
-const EMAIL_SUBJECT = getProperty_(REQUIRED_SCRIPT_PROPERTIES?.EMAIL_SUBJECT);
+const BATCH_SIZE = parseInt(getProperty_("BATCH_SIZE") as string);
+const TARGET_SEND_TO_EMAIL = getProperty_("TARGET_SEND_TO_EMAIL");
+const EMAIL_SUBJECT = getProperty_("EMAIL_SUBJECT");
 
 /**
  * Main sender function for the emails job
