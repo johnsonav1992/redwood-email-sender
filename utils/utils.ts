@@ -1,3 +1,19 @@
+const REQUIRED_SCRIPT_PROPERTIES = {
+  BATCH_SIZE: "BATCH_SIZE",
+  TARGET_SEND_TO_EMAIL: "TARGET_SEND_TO_EMAIL",
+  EMAIL_SUBJECT: "EMAIL_SUBJECT",
+} as const;
+
+function setupScriptProperties() {
+  const properties = PropertiesService.getScriptProperties();
+
+  Object.entries(REQUIRED_SCRIPT_PROPERTIES).forEach(([_, value]) => {
+    if (!properties.getProperty(value)) {
+      properties.setProperty(value, "put value here");
+    }
+  });
+}
+
 function setupTrigger_() {
   const triggers = ScriptApp.getProjectTriggers();
 

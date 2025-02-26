@@ -1,10 +1,20 @@
 const emailColumnLetter = "A"; // Column for email addresses
 const statusColumnLetter = "B"; // Column for email sending status
-const BATCH_SIZE = parseInt(getProperty_("BATCH_SIZE") as string); // Number of recipients per email batch
-const TARGET_SEND_TO_EMAIL = getProperty_("TARGET_SEND_TO_EMAIL");
-const EMAIL_SUBJECT = getProperty_("EMAIL_SUBJECT");
 
-// Function to send emails in batches
+// Number of recipients per email batch
+const BATCH_SIZE = parseInt(
+  getProperty_(REQUIRED_SCRIPT_PROPERTIES?.BATCH_SIZE) as string
+);
+
+const TARGET_SEND_TO_EMAIL = getProperty_(
+  REQUIRED_SCRIPT_PROPERTIES?.TARGET_SEND_TO_EMAIL
+);
+
+const EMAIL_SUBJECT = getProperty_(REQUIRED_SCRIPT_PROPERTIES?.EMAIL_SUBJECT);
+
+/**
+ * Main sender function for the emails job
+ */
 function sendEmailsInBatches_() {
   if (!TARGET_SEND_TO_EMAIL || !EMAIL_SUBJECT || !BATCH_SIZE) {
     deleteTrigger_();
@@ -111,10 +121,17 @@ function sendEmailsInBatches_() {
   setProperty_("currentIndex", currentEmailRowToStartOn.toString());
 }
 
+/**
+ * Sets up the email job and runs it from the apps script dropdown.
+ * This function initializes the necessary trigger for the email job.
+ */
 function setUpEmailJobAndRun() {
   setupTrigger_();
 }
 
+/**
+ * Checks and logs the remaining daily email send quota.
+ */
 function checkQuota() {
   const remainingSendQuota = MailApp.getRemainingDailyQuota();
   console.log("Remaining quota: " + remainingSendQuota);
