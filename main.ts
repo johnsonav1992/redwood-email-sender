@@ -35,12 +35,14 @@ function sendEmailsInBatches_() {
   console.log("Remaining send quota is: " + remainingSendQuota);
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const emailColumn = sheet.getRange(
-    `${emailColumnLetter}:${emailColumnLetter}`
-  );
-  const emailColumnData = emailColumn.getValues();
+  const allSheetEmailData = sheet
+    .getRange(`${emailColumnLetter}:${statusColumnLetter}`)
+    .getValues();
 
-  const emails = emailColumnData.filter((row) => row[0]); // Keep only rows with non-empty email
+  const emails = allSheetEmailData
+    .map((row) => row[0])
+    .filter((email) => !!email); // Keep only rows with non-empty email
+
   const totalEmails = emails.length - 1; // Subtract 1 to account for header row
 
   // Get the current index from the script properties to know what row to start sending from
@@ -53,11 +55,11 @@ function sendEmailsInBatches_() {
     i <= totalEmails && sentCount < BATCH_SIZE;
     i++
   ) {
-    const email = emails[i][0];
+    const email = emails[i];
     const cellNum = i + 1;
-    const status = sheet.getRange(`${statusColumnLetter}${cellNum}`).getValue();
+    const status = allSheetEmailData[i][1];
 
-    if (status !== "Sent" && email) {
+    if ((status !== "Sent" || status !== "sent") && email) {
       emailBatch.push({ email, rowNum: cellNum });
       sentCount++;
     }
