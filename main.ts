@@ -37,7 +37,7 @@ function sendEmailsInBatches_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const allSheetEmailData = sheet
     .getRange(`${emailColumnLetter}:${statusColumnLetter}`)
-    .getValues();
+    .getValues() as Array<EmailRow>;
 
   const emails = allSheetEmailData
     .map((row) => row[0])
