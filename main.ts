@@ -58,8 +58,9 @@ function sendEmailsInBatches_() {
     const email = emails[i];
     const cellNum = i + 1;
     const status = allSheetEmailData[i][1];
+    const isSent = status === "Sent" || status === "sent";
 
-    if ((status !== "Sent" || status !== "sent") && email) {
+    if (!isSent && email) {
       emailBatch.push({ email, rowNum: cellNum });
       sentCount++;
     }
