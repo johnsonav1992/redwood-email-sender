@@ -34,6 +34,13 @@ function sendEmailsInBatches_() {
   console.log("Starting new batch...");
   console.log("Remaining send quota is: " + remainingSendQuota);
 
+  const effectiveBatchSize = Math.min(BATCH_SIZE, remainingSendQuota);
+  if (effectiveBatchSize < BATCH_SIZE) {
+    console.log(
+      `Batch size reduced from ${BATCH_SIZE} to ${effectiveBatchSize} due to remaining quota`
+    );
+  }
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const allSheetEmailData = sheet
     .getRange(`${emailColumnLetter}:${statusColumnLetter}`)
@@ -52,13 +59,14 @@ function sendEmailsInBatches_() {
 
   for (
     let i = currentEmailRowToStartOn;
-    i <= totalEmails && sentCount < BATCH_SIZE;
+    i <= totalEmails && sentCount < effectiveBatchSize;
     i++
   ) {
     const email = emails[i];
     const cellNum = i + 1;
     const status = allSheetEmailData[i][1];
-    const isSent = status === "Sent" || status === "sent";
+    const isSent =
+      status === "Sent" || status === "sent" || status === "Invalid Email";
 
     if (!isSent && email) {
       emailBatch.push({ email, rowNum: cellNum });
@@ -69,8 +77,29 @@ function sendEmailsInBatches_() {
   if (currentEmailRowToStartOn > totalEmails || !emailBatch.length)
     return exitJob_();
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validEmailBatch = emailBatch.filter((item) => {
+    const isValid = emailRegex.test(item.email.trim());
+    if (!isValid) {
+      console.warn(`Invalid email address found and skipped: ${item.email}`);
+      sheet
+        .getRange(`${statusColumnLetter}${item.rowNum}`)
+        .setValue("Invalid Email");
+    }
+
+    return isValid;
+  });
+
+  if (validEmailBatch.length === 0) {
+    console.warn("No valid emails in this batch, skipping...");
+    currentEmailRowToStartOn += emailBatch.length;
+
+    setProperty_("currentIndex", currentEmailRowToStartOn.toString());
+    return;
+  }
+
   try {
-    const emailAddresses = emailBatch
+    const emailAddresses = validEmailBatch
       .map((item) => item.email.trim())
       .join(",");
 
@@ -102,7 +131,7 @@ function sendEmailsInBatches_() {
       inlineImages: emailImages,
     });
 
-    emailBatch.forEach((item) => {
+    validEmailBatch.forEach((item) => {
       sheet.getRange(`${statusColumnLetter}${item.rowNum}`).setValue("Sent");
     });
 
@@ -112,7 +141,7 @@ function sendEmailsInBatches_() {
 
     currentEmailRowToStartOn += emailBatch.length;
   } catch (e) {
-    console.error("Error sending email batch to: " + emails, e);
+    console.error("Error sending email batch:", e);
   }
 
   setProperty_("currentIndex", currentEmailRowToStartOn.toString());
