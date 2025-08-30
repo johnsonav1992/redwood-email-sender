@@ -35,6 +35,7 @@ function sendEmailsInBatches_() {
   console.log("Remaining send quota is: " + remainingSendQuota);
 
   const effectiveBatchSize = Math.min(BATCH_SIZE, remainingSendQuota);
+
   if (effectiveBatchSize < BATCH_SIZE) {
     console.log(
       `Batch size reduced from ${BATCH_SIZE} to ${effectiveBatchSize} due to remaining quota`
