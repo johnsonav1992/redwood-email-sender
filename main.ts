@@ -102,7 +102,21 @@ function sendEmailsInBatches_() {
   try {
     const emailAddresses = validEmailBatch
       .map((item) => item.email.trim())
+      .filter((email) => email.length > 0) // Filter out empty strings after trim
       .join(",");
+
+    // Double-check that we have valid email addresses to send to
+
+    const noEmailsAtAll = !emailAddresses || emailAddresses.length === 0;
+
+    if (noEmailsAtAll) {
+      console.warn(
+        "No valid email addresses after processing, skipping batch..."
+      );
+      currentEmailRowToStartOn += emailBatch.length;
+      setProperty_("currentIndex", currentEmailRowToStartOn.toString());
+      return;
+    }
 
     const allScriptProperties =
       PropertiesService.getScriptProperties().getProperties();
